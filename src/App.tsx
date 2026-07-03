@@ -558,7 +558,7 @@ export default function RenovationReadinessCheck() {
               <div style={{ fontSize: '36px', marginBottom: '12px' }}>📋</div>
               <div style={{ fontSize: '24px', fontWeight: 700, color: C.gold, marginBottom: '10px' }}>Your report is ready.</div>
               <p style={{ fontSize: '14px', color: C.creamMid, lineHeight: 1.7, marginBottom: '24px', maxWidth: '480px', margin: '0 auto 24px' }}>Enter your details to unlock your personalised risk report — including a breakdown of every area, specific guidance on your gaps, and a recommended next step based on where you actually are.</p>
-              <input type="text" placeholder="First name (optional)" value={name} onChange={e => setName(e.target.value)} style={inp} />
+              <input type="text" placeholder="First name" value={name} onChange={e => setName(e.target.value)} style={inp} />
               <input type="email" placeholder="Your email address *" value={email} onChange={e => { setEmail(e.target.value); setEmailError(''); }} style={{ ...inp, borderColor: emailError ? C.red : C.border }} onKeyDown={e => e.key === 'Enter' && submitEmail()} />
               {emailError && <p style={{ color: C.red, fontSize: '13px', marginBottom: '10px', textAlign: 'left' }}>{emailError}</p>}
               <button onClick={submitEmail} style={{ width: '100%', background: C.gold, border: 'none', borderRadius: '12px', padding: '15px', color: C.bgDeep, fontSize: '15px', fontWeight: 700, cursor: 'pointer', marginBottom: '12px' }}>Unlock my Renovation Report</button>
