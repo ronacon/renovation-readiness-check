@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronRight, ChevronLeft, Calendar, Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 const C = {
@@ -417,8 +417,49 @@ export default function RenovationReadinessCheck() {
     if (qIndex > 0) setQIndex(i => i - 1);
     else setPhase('intro');
   };
+
+  // Kajabi form loaded invisibly in the background so the existing custom
+  // name/email UI above can stay pixel-identical - on submit its values are
+  // copied into this hidden Kajabi form and that gets submitted instead,
+  // which is what actually captures the lead in Kajabi.
+  const kajabiHostRef = useRef<HTMLDivElement | null>(null);
+  const kajabiDocRef = useRef<Document | null>(null);
+  useEffect(() => {
+    const container = kajabiHostRef.current;
+    if (!container) return;
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    iframe.style.opacity = '0';
+    iframe.style.pointerEvents = 'none';
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.tabIndex = -1;
+    container.appendChild(iframe);
+    const doc = iframe.contentDocument;
+    if (!doc) return;
+    doc.open();
+    doc.write('<script src="https://thrivepropertyeducation.mykajabi.com/forms/2149632397/embed.js"></script>');
+    doc.close();
+    kajabiDocRef.current = doc;
+  }, []);
+
+  const submitToKajabi = () => {
+    const doc = kajabiDocRef.current;
+    const form = doc?.querySelector('form') as HTMLFormElement | null | undefined;
+    if (!form) return;
+    const nameInput = form.querySelector('input[name="form_submission[name]"]') as HTMLInputElement | null;
+    const emailInput = form.querySelector('input[name="form_submission[email]"]') as HTMLInputElement | null;
+    // Our UI treats first name as optional; Kajabi's field is required, so
+    // that constraint is dropped here to match our own validation contract.
+    if (nameInput) { nameInput.removeAttribute('required'); nameInput.value = name; }
+    if (emailInput) emailInput.value = email;
+    form.requestSubmit ? form.requestSubmit() : form.submit();
+  };
+
   const submitEmail = () => {
     if (!email.trim() || !email.includes('@')) { setEmailError('Please enter a valid email address.'); return; }
+    submitToKajabi();
     const scored = scoreAnswers(answers);
     setResults(scored);
     setPhase('results');
@@ -430,6 +471,7 @@ export default function RenovationReadinessCheck() {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.cream, fontFamily: 'system-ui,-apple-system,sans-serif', padding: '24px 20px' }}>
+      <div ref={kajabiHostRef} />
       <div style={{ maxWidth: '680px', margin: '0 auto' }}>
 
         {/* HEADER */}
